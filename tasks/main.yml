@@ -1,0 +1,34 @@
+---
+
+- block:
+    - name: Ensure NFS share is accessible
+      wait_for:
+        host: "{{ nfs_address }}"
+        port: 2049
+        state: started
+        delay: 0
+        timeout: 3
+  rescue:
+    - fail:
+        msg: "NFS share unreachable"
+  tags:
+    - nfs-config
+
+
+- name: Ensure NFS mount point exist
+  file:
+    path: "{{ nfs_mountpoint }}"
+    state: directory
+  tags:
+    - nfs-config
+
+- name: Mount NFS Share
+  mount:
+    path: "{{ nfs_mountpoint }}"
+    src: "{{ nfs_address }}:{{ nfs_share }}"
+    fstype: nfs
+    opts: _netdev
+    state: mounted
+    boot: yes
+  tags:
+    - nfs-config
